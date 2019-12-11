@@ -1,0 +1,203 @@
+digraph finite_state_machine {
+  /**
+   * Default style configuration
+   */
+  rankdir="TB";
+  bgcolor="white";
+  node [
+    fontname="Arial";
+    fontsize=12;
+    margin=0.1;
+    shape="rect";
+    style="rounded";
+  ];
+  edge [
+    fontname="Arial";
+    fontsize=12;
+    dir="forward";
+    style="solid";
+    arrowhead="normal";
+    arrowtail="normal";
+    weight=1;
+  ];
+
+  { rank=same; "User"; "startRegistry"; }
+  { rank=same; "startHandoff"; "startServer"; }
+
+  /**
+   * Node for Network status
+   */
+  "DISCONNECTED" [
+    shape="diamond";
+    margin=0;
+    style="rounded,bold";
+    color=limegreen;
+    label=<<table border="0"><tr><td>DISCONNECTED</td></tr><hr/><tr><td>연결 끊어짐</td></tr></table>>;
+  ];
+
+  "CONNECTING" [
+    shape="diamond";
+    margin=0;
+    style="rounded,bold";
+    color=limegreen;
+    label=<<table border="0"><tr><td>CONNECTING</td></tr><hr/><tr><td>연결 시도중<br/>/ 복구중</td></tr></table>>;
+  ];
+
+  "CONNECTED" [
+    shape="diamond";
+    margin=0;
+    style="rounded,bold";
+    color=limegreen;
+    label=<<table border="0"><tr><td>CONNECTED</td></tr><hr/><tr><td>연결됨</td></tr></table>>;
+  ];
+
+  "TOKEN_ERROR" [
+    shape="diamond";
+    margin=0;
+    style="rounded,bold";
+    color=limegreen;
+    label=<<table border="0"><tr><td>TOKEN_ERROR</td></tr><hr/><tr><td>토큰 재발급 필요</td></tr></table>>;
+  ];
+
+  /**
+   * Entrypoint
+   */
+  "User" [
+    shape="circle";
+    style="filled";
+    color="black";
+    fontcolor="white";
+  ];
+
+  /**
+   * Edges from NetworkManager API
+   */
+  "User" -> "startRegistry" [
+    label="NetworkManager.Connect()";
+    color="blue";
+    style="dotted,bold";
+  ];
+
+  "User" -> "startHandoff" [
+    label="NetworkManager.Handoff()";
+    color="blue";
+    style="dotted,bold";
+  ];
+
+  /**
+   * Registry nodes
+   */
+  "startRegistry" [
+    label="startRegistry";
+    style="rounded,filled";
+  ];
+
+  "serverPolicies" [
+    label=<<table border="0"><tr><td>serverPolicies</td></tr><hr/><tr><td>server = list[i++]</td></tr></table>>;
+  ];
+
+  "RegistryResult" [ shape=record label="{200|401,403|-1}" ];
+
+  "startRegistry" -> "RegistryResult" [ label="2. GET /v1/policies" ];
+  "RegistryResult" -> "checkCache" [ color="red"; label="Failed(-1)" ];
+  "RegistryResult" -> "cacheUpdate" [ color="limegreen"; label="Ok(200)" ];
+  "checkCache" -> "serverPolicies" [ label="Cache available" ];
+  "checkCache" -> "DISCONNECTED" [ color="red"; label="No cache" ];
+  "cacheUpdate" -> "serverPolicies";
+  "serverPolicies" -> "startServer" [ label="Create" ];
+
+  /**
+   * Server nodes
+   */
+  "startServer" [
+    label=<<table border="0"><tr><td>startServer</td></tr><hr/><tr><td>serverPolicies[i]</td></tr></table>>;
+    style="rounded,filled";
+  ];
+
+  "updateRetryCount"[
+    label="retry_count++";
+  ];
+
+  "resetRetryCount"[
+    label="set retry_count = 0";
+  ];
+
+  "ServerResult" [ shape=record label="{200|401,403|-1}" ];
+
+  "startServer" -> "ServerResult" [ label="2. GET /v1/directives" ];
+  "ServerResult" -> "updateRetryCount" [ color="red"; label="Failed(-1)" ];
+  "ServerResult" -> "resetRetryCount" [ color="limegreen"; label="Ok(200)" ];
+  "updateRetryCount" -> "startServer" [ label="Retry" ];
+  "updateRetryCount" -> "serverPolicies" [ color="red"; label="Retry count over" ];
+
+  /**
+   * Handoff nodes
+   */
+  "startHandoff" [
+    label=<<table border="0"><tr><td>startHandoff</td></tr><hr/><tr><td>serverPolicy</td></tr></table>>;
+    style="rounded,filled";
+  ];
+
+  "updateHandoffRetryCount"[
+    label="retry_count++";
+  ];
+
+  "resetHandoffRetryCount"[
+    label="set retry_count = 0";
+  ];
+
+  "handoffSwitching" [
+    label=<<table border="0"><tr><td>Switching</td></tr><hr/>
+    <tr><td>- delete connected-server</td></tr>
+    <tr><td>- set handoff server to default server</td></tr>
+    </table>>;
+  ];
+
+  "HandoffResult" [ shape=record label="{200|401,403|-1}" ];
+
+  "startHandoff" -> "HandoffResult" [ label="GET /v1/directives" ];
+  "HandoffResult" -> "updateHandoffRetryCount" [ color="red"; label="Failed(-1)" ];
+  "HandoffResult" -> "resetHandoffRetryCount" [ color="limegreen"; label="Ok(200)" ];
+  "resetHandoffRetryCount" -> "handoffSwitching";
+  "updateHandoffRetryCount" -> "startHandoff" [ label="Retry" ];
+  "updateHandoffRetryCount" -> "startRegistry" [ color="red"; label="Retry count over" ];
+
+  /**
+   * Ping nodes
+   */
+  "startPing" [
+    label=<<table border="0"><tr><td>Ping</td></tr><hr/><tr><td>healthCheckPolicy</td></tr></table>>;
+    style="rounded,filled";
+  ];
+
+  "PingResult" [ shape=record label="{200|401,403|-1}" ];
+
+  "CONNECTED" -> "startPing" [ label="Create" ];
+  "startPing" -> "PingResult" [ label="POST /v1/ping" ];
+  "PingResult" -> "startPing" [ color="limegreen"; label="Ok(200)"  ];
+  "PingResult" -> "startServer" [ color="red"; label="Failed(-1)" ];
+
+  /**
+   * Edges for status update
+   */
+  "resetRetryCount" -> "CONNECTED" [ label="Status Update" ];
+  "startRegistry" -> "CONNECTING" [ label="1. Status Update" ];
+  "startServer" -> "CONNECTING" [ label="1. Status Update" ];
+  "handoffSwitching" -> "CONNECTED" [ label="Status Update" ];
+  "serverPolicies" -> "DISCONNECTED" [ color="red"; label=" All server failed\n(i >= size of list) " ];
+
+  /**
+   * Edges for token error
+   */
+  "RegistryResult" -> "TOKEN_ERROR" [ color="red"; style="bold"; label="Token error(401)"; ];
+  "ServerResult" -> "TOKEN_ERROR" [ color="red"; style="bold"; label="Token error(401)"; ];
+  "PingResult" -> "TOKEN_ERROR" [ color="red"; style="bold"; label="Token error(401)"; ];
+  "HandoffResult" -> "TOKEN_ERROR" [ color="red"; style="bold"; label="Token error(401)"; ];
+  "TOKEN_ERROR" -> "DISCONNECTED" [ label="Status Update" ];
+
+  /**
+   * Edges for disconnected from network
+   */
+  "CONNECTED" -> "startServer" [ color="red"; label="Disconnected\n(Server)" ];
+  "CONNECTED" -> "startRegistry" [ color="red"; label="Disconnected\n(Handoff)" ];
+}
