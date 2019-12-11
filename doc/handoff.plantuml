@@ -1,0 +1,65 @@
+@startuml
+
+title HandoffConnection sequence
+skinparam SequenceBoxBorderColor transparent
+
+participant "SystemAgent" as sa
+participant "network_manager" as nmgr
+
+box Server
+participant "ServerFrom" as sold
+participant "ServerTo" as snew
+end box
+
+activate sold
+sold --> sa: Handoff Directive
+note left of sold
+  "address": "ServerTo",
+  "hostname": "ServerTo",
+  "port": 443,
+  "protocol": "H2"
+  . . .
+end note
+activate sa
+
+sa -> nmgr: handoff()
+activate nmgr
+nmgr --> snew: GET /v1/directives
+return
+deactivate sa
+
+alt #transparent failed
+
+snew --> nmgr: Failed
+activate nmgr
+nmgr -> sa: handoff_status_callback\n(HANDOFF_FAILED)
+deactivate nmgr
+
+else #transparent successed
+
+snew --> nmgr: Connected
+activate snew
+activate nmgr
+nmgr -> sa: handoff_status_callback\n(HANDOFF_READY)
+activate sa
+sa -> nmgr: send_event(Disconnect)
+activate nmgr
+nmgr --> sold: POST /v1/event
+return
+return
+nmgr -> sold: Disconnect
+destroy sold
+nmgr -> nmgr: Switching default connection\n to "ServerTo"
+nmgr -> sa: handoff_status_callback\n(HANDOFF_COMPLETED)
+
+activate sa
+sa -> nmgr: send_event(SynchronizeState)
+activate nmgr
+nmgr --> snew: POST /v1/event
+return
+return
+deactivate nmgr
+
+end alt
+
+@enduml
