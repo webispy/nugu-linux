@@ -1,0 +1,152 @@
+nugu (0.8.0ubuntu1~buster) buster; urgency=medium
+
+  * Fixed gstreamer bugs
+  * Fixed AudioPlayer interface bugs
+  * Fixed ASR interface bugs
+  * Added Sound interface v1.0
+  * Added profiling
+  * Added call focus
+  * Updated RDRID(Referrer Request Dialog Id)
+  * Updated ASR interface v1.1 spec
+  * Updated Text interface v1.1 spec
+  * Updated System interface v1.1 spec
+  * Updated TTS interface v1.0 spec
+  * Upgraded network v2
+  * Upgraded nugu log
+
+ -- nugulinux <nugulinux@gmail.com>  Thu, 16 Apr 2020 13:30:00 +0900
+
+nugu (0.7.0ubuntu1~buster) buster; urgency=medium
+
+  * Fixed build scripts
+  * Fixed capability management
+  * Fixed context of agents
+  * Fixed focus manager
+  * Fixed play context policy
+  * Fixed portaudio bugs
+  * Added Request & Response Mapping
+  * Added protocol log
+  * Added network v2 api
+  * Added libopus v1.3.1
+  * Update RDRID(Referrer Request Dialog Id)
+  * Upgraded ASR interface to v1.1
+  * Upgraded AudioPlayer interface to v1.2
+  * Upgraded Text interface to v1.1
+  * Upgraded curl to v7.69.1
+  * Removed Display agent
+  * Removed Location agent
+  * Removed Delegation agent
+  * Removed Extension agent
+
+ -- nugulinux <nugulinux@gmail.com>  Tue, 31 Mar 2020 14:30:00 +0900
+
+nugu (0.6.0ubuntu1~buster) buster; urgency=medium
+
+  * Fixed ring-buffer bugs
+  * Fixed network bugs
+  * Added Mic capability agent
+  * Added Speaker capability agent
+  * Added /v1/events support
+  * Added simple examples
+  * Added a capability injection example
+  * Removed NuguConfig
+  * Upgraded NuguUUID spec to v2.0
+  * Upgraded AudioPlayerAgent to v1.1
+  * Upgraded ExtensionAgent to v1.1
+  * Upgraded SystemAgent to v1.1
+  * Upgraded curl to v7.67.0
+  * Upgraded nghttp2 to v1.40.0
+  * Changed namespace
+  * Changed capability management
+  * Changed source-tree structure
+
+ -- nugulinux <nugulinux@gmail.com>  Fri, 7 Feb 2020 17:10:00 +0900
+
+nugu (0.5.0ubuntu1~buster) buster; urgency=medium
+
+  * Fixed Network Module
+  * Fixed Location Interface
+  * Fixed NuguConfig
+  * Fixed SystemAgent
+  * Added DisplayRenderAssembly
+  * Added AudioRecorderManager
+  * Optimized Capability Interface
+  * Changed SourceTree Structure
+
+ -- nugulinux <nugulinux@gmail.com>  Mon, 16 Dec 2019 17:30:00 +0900
+
+nugu (0.4.0ubuntu1~buster) buster; urgency=medium
+
+  * Added Location Agent
+  * Added Permission Agent
+  * Added playStackControl to context management
+  * Added ReferrerDialogRequestId for user action analysis
+  * Added interface for display handling
+  * Added event queue for raising event callbacks
+  * Optimized nugu_sample
+
+ -- nugulinux <nugulinux@gmail.com>  Fri, 22 Nov 2019 14:40:00 +0900
+
+nugu (0.3.1ubuntu1~buster) buster; urgency=medium
+
+  * Fixed the bug (about Recognize event, TextInfo event)
+
+ -- nugulinux <nugulinux@gmail.com>  Thu, 7 Nov 2019 16:00:00 +0900
+
+nugu (0.3.0ubuntu1~buster) buster; urgency=medium
+
+  * Applied updated version of capability interface
+  * Added delegation interface
+  * Added directive versioning
+  * Fixed static analysis issues
+
+ -- nugulinux <nugulinux@gmail.com>  Thu, 7 Nov 2019 12:00:00 +0900
+
+nugu (0.2.0ubuntu1~buster) buster; urgency=medium
+
+  * Fixed a lot of bugs.
+  * Added document
+  * Added PlaySyncManager
+
+ -- nugulinux <nugulinux@gmail.com>  Tue, 15 Oct 2019 10:50:00 +0900
+
+nugu (0.1.4ubuntu1~buster) buster; urgency=medium
+
+  * Fixed TTS agent
+  * Fixed context manager
+  * Fixed media player
+
+ -- nugulinux <nugulinux@gmail.com>  Fri, 11 Oct 2019 09:30:00 +0900
+
+nugu (0.1.3ubuntu1~buster) buster; urgency=medium
+
+  * Fixed a lot of bugs.
+  * Fixed multipart parsing error
+  * Added Capability instance builder
+  * Removed gRPC network
+
+ -- nugulinux <nugulinux@gmail.com>  Tue, 8 Oct 2019 13:50:00 +0900
+
+nugu (0.1.2ubuntu1~buster) buster; urgency=medium
+
+  * Fixed a lot of bugs.
+  * Fixed dialog-message-id
+
+ -- nugulinux <nugulinux@gmail.com>  Wed, 2 Oct 2019 13:30:00 +0900
+
+nugu (0.1.1ubuntu1~buster) buster; urgency=medium
+
+  * Fixed a lot of bugs.
+  * Added Text agent.
+  * Added HTTP/2 network.
+  * Added OAuth2 support.
+  * Added context sync.
+  * The wakeup module has been detached from the ASR agent.
+
+ -- nugulinux <nugulinux@gmail.com>  Wed, 25 Sep 2019 10:00:00 +0900
+
+nugu (0.1.0ubuntu1~buster) buster; urgency=medium
+
+  * Initial release.
+
+ -- nugulinux <nugulinux@gmail.com>  Mon, 25 Mar 2019 11:07:59 +0900
