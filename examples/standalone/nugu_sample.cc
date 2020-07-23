@@ -22,12 +22,18 @@
 #include "capability_collection.hh"
 #include "nugu_sample_manager.hh"
 
+#include "smarthome_agent.hh"
+#include "devicefeature_agent.hh"
+
 using namespace NuguClientKit;
 
 std::unique_ptr<NuguClient> nugu_client = nullptr;
 std::unique_ptr<NuguSampleManager> nugu_sample_manager = nullptr;
 std::unique_ptr<CapabilityCollection> capa_collection = nullptr;
 INuguCoreContainer* nugu_core_container = nullptr;
+
+SmartHomeAgent* smarthome_agent = nullptr;
+DeviceFeatureAgent* devicefeature_agent = nullptr;
 
 template <typename T, typename... Ts>
 std::unique_ptr<T> make_unique(Ts&&... params)
@@ -120,6 +126,9 @@ void registerCapabilities()
     auto text_handler(capa_collection->getCapability<ITextHandler>("Text"));
     auto mic_handler(capa_collection->getCapability<IMicHandler>("Mic"));
 
+    smarthome_agent = new SmartHomeAgent();
+    devicefeature_agent = new DeviceFeatureAgent();
+
     asr_handler->setAttribute(ASRAttribute { nugu_sample_manager->getModelPath() });
     nugu_sample_manager->setTextHandler(text_handler)
         ->setMicHandler(mic_handler);
@@ -132,6 +141,8 @@ void registerCapabilities()
         ->add(capa_collection->getCapability<IAudioPlayerHandler>("AudioPlayer"))
         ->add(capa_collection->getCapability<ISoundHandler>("Sound"))
         ->add(capa_collection->getCapability<ISessionHandler>("Session"))
+        ->add(smarthome_agent)
+        ->add(devicefeature_agent)
         ->add(asr_handler)
         ->add(text_handler)
         ->add(mic_handler)
@@ -174,7 +185,7 @@ int main(int argc, char** argv)
     auto network_manager(nugu_client->getNetworkManager());
     network_manager->addListener(network_manager_listener.get());
     network_manager->setToken(getenv("NUGU_TOKEN"));
-    network_manager->setUserAgent("0.2.0");
+    network_manager->setUserAgent("3.0.69");
 
     if (!network_manager->connect()) {
         msg_error("< Cannot connect to NUGU Platform.");
