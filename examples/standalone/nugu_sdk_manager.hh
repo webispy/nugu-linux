@@ -28,6 +28,8 @@
 #include "nugu_sample_manager.hh"
 #include "speaker_status.hh"
 #include "speech_recognizer_aggregator_listener.hh"
+#include "smarthome_agent.hh"
+#include "devicefeature_agent.hh"
 
 class SpeakerController {
 public:
@@ -110,6 +112,8 @@ private:
     IBluetoothHandler* bluetooth_handler = nullptr;
     BluetoothStatus* bluetooth_status = nullptr;
     SpeakerStatus* speaker_status = nullptr;
+    SmartHomeAgent* smarthome_agent = nullptr;
+    DeviceFeatureAgent* devicefeature_agent = nullptr;
 
     std::function<void()> on_fail_func = nullptr;
 

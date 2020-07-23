@@ -226,11 +226,14 @@ void NuguSDKManager::createInstance()
     capability_helper->getInteractionControlManager()->addListener(this);
     playsync_manager = capability_helper->getPlaySyncManager();
 
+    smarthome_agent = new SmartHomeAgent();
+    devicefeature_agent = new DeviceFeatureAgent();
+
     setDefaultSoundLayerPolicy();
 
     network_manager->addListener(this);
     network_manager->setToken(getenv("NUGU_TOKEN"));
-    network_manager->setUserAgent("0.2.0");
+    network_manager->setUserAgent("3.0.69");
 }
 
 void NuguSDKManager::registerCapabilities()
@@ -269,6 +272,8 @@ void NuguSDKManager::registerCapabilities()
         ->add(capa_collection->getCapability<ILocationHandler>("Location"))
         ->add(capa_collection->getCapability<IBatteryHandler>("Battery"))
         ->add(speaker_handler)
+        ->add(smarthome_agent)
+        ->add(devicefeature_agent)
         ->add(asr_handler)
         ->add(text_handler)
         ->add(mic_handler)
@@ -350,6 +355,9 @@ void NuguSDKManager::deleteInstance()
 {
     nugu_client.reset();
     capa_collection.reset();
+
+    delete smarthome_agent;
+    delete devicefeature_agent;
 
     speaker_status->destroyInstance();
     bluetooth_status->destroyInstance();
