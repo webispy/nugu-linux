@@ -35,6 +35,7 @@ struct _nugu_buffer {
 EXPORT_API NuguBuffer *nugu_buffer_new(size_t default_size)
 {
 	NuguBuffer *buf;
+	int x = 0;
 
 	buf = calloc(1, sizeof(struct _nugu_buffer));
 	if (!buf) {
@@ -42,7 +43,7 @@ EXPORT_API NuguBuffer *nugu_buffer_new(size_t default_size)
 		return NULL;
 	}
 
-	buf->index = 0;
+	buf->index = x;
 	buf->alloc_size = default_size;
 
 	if (default_size == 0)
