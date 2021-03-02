@@ -59,7 +59,7 @@ static int _dumpfile_open(const char *path, const char *prefix)
 	if (fd < 0)
 		nugu_error("open(%s) failed: %s", buf, strerror(errno));
 
-	nugu_dbg("%s filedump to '%s' (fd=%d)", prefix, buf, fd);
+	nugu_info("%s filedump to '%s' (fd=%d)", prefix, buf, fd);
 
 	free(buf);
 
@@ -110,7 +110,7 @@ static int _decoder_destroy(NuguDecoderDriver *driver, NuguDecoder *dec)
 
 	nugu_decoder_set_driver_data(dec, NULL);
 
-	nugu_dbg("decoder filedump done");
+	nugu_info("decoder filedump done");
 
 	return 0;
 }
@@ -184,7 +184,7 @@ static int _pcm_stop(NuguPcmDriver *driver, NuguPcm *pcm)
 
 	nugu_pcm_set_driver_data(pcm, NULL);
 
-	nugu_dbg("pcm filedump close: fd=%d", fd);
+	nugu_info("pcm filedump close: fd=%d", fd);
 
 	nugu_pcm_emit_status(pcm, NUGU_MEDIA_STATUS_STOPPED);
 

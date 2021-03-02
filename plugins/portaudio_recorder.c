@@ -390,6 +390,11 @@ static int init(NuguPlugin *p)
 		return -1;
 	}
 
+	if (Pa_GetDefaultInputDevice() == paNoDevice) {
+		nugu_error("no default input device");
+		return -1;
+	}
+
 	rec_driver = nugu_recorder_driver_new(PLUGIN_DRIVER_NAME, &rec_ops);
 	if (!rec_driver) {
 		nugu_error("nugu_recorder_driver_new() failed");

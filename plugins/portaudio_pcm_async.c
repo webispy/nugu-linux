@@ -553,6 +553,11 @@ static int init(NuguPlugin *p)
 		return -1;
 	}
 
+	if (Pa_GetDefaultOutputDevice() == paNoDevice) {
+		nugu_error("no default output device");
+		return -1;
+	}
+
 	pcm_driver = nugu_pcm_driver_new(PLUGIN_DRIVER_NAME, &pcm_ops);
 	if (!pcm_driver) {
 		nugu_error("nugu_pcm_driver_new() failed");

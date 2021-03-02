@@ -261,7 +261,8 @@ bool TTSPlayer::play()
     nugu_dbg("request to play mediaplayer.attachment");
     StopB4Start();
 
-    d->pos_timer->restart();
+    if (d->pos_timer)
+        d->pos_timer->restart();
 
     return (nugu_pcm_start(d->player) >= 0);
 }
@@ -271,7 +272,8 @@ bool TTSPlayer::stop()
     nugu_dbg("request to stop mediaplayer.attachment");
     clearContent();
 
-    d->pos_timer->stop();
+    if (d->pos_timer)
+        d->pos_timer->stop();
 
     return (nugu_pcm_stop(d->player) >= 0);
 }
