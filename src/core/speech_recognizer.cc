@@ -20,6 +20,7 @@
 
 #include "base/nugu_log.h"
 #include "base/nugu_prof.h"
+#include "base/nugu_encoder.h"
 
 #include "nugu_timer.hh"
 #include "speech_recognizer.hh"
@@ -93,21 +94,32 @@ void SpeechRecognizer::loop()
     int prev_epd_ret = 0;
     bool is_epd_end = false;
     std::string model_file;
+    NuguEncoder* encoder;
+    NuguAudioProperty prop;
 
     std::string samplerate = recorder->getSamplerate();
-    if (samplerate == "8k")
+    if (samplerate == "8k") {
         epd_param.sample_rate = 8000;
-    else if (samplerate == "22k")
+        prop.samplerate = NUGU_AUDIO_SAMPLE_RATE_8K;
+    } else if (samplerate == "22k") {
         epd_param.sample_rate = 22050;
-    else if (samplerate == "32k")
+        prop.samplerate = NUGU_AUDIO_SAMPLE_RATE_22K;
+    } else if (samplerate == "32k") {
         epd_param.sample_rate = 32000;
-    else if (samplerate == "44k")
+        prop.samplerate = NUGU_AUDIO_SAMPLE_RATE_32K;
+    } else if (samplerate == "44k") {
         epd_param.sample_rate = 44100;
-    else
+        prop.samplerate = NUGU_AUDIO_SAMPLE_RATE_44K;
+    } else {
         epd_param.sample_rate = 16000;
+        prop.samplerate = NUGU_AUDIO_SAMPLE_RATE_16K;
+    }
 
     epd_param.input_type = EPD_DATA_TYPE_LINEAR_PCM16;
-    epd_param.output_type = EPD_DATA_TYPE_SPEEX_STREAM;
+    epd_param.output_type = EPD_DATA_TYPE_LINEAR_PCM16;
+
+    prop.format = NUGU_AUDIO_FORMAT_S16_LE;
+    prop.channel = 1;
 
     nugu_dbg("Listening Thread: started");
 
@@ -146,8 +158,15 @@ void SpeechRecognizer::loop()
         nugu_dbg("Listening Thread: asr_is_running=%d", is_running);
         sendListeningEvent(ListeningState::READY, id);
 
-        if (epd_client_start(model_file.c_str(), epd_param) < 0 || !recorder->start()) {
-            nugu_error("epd_client_start() failed or recorder->start() failed");
+        try {
+            encoder = nugu_encoder_new(nugu_encoder_driver_find_bytype(NUGU_ENCODER_TYPE_SPEEX), prop);
+            if (!encoder)
+                throw "can't find encoder driver";
+
+            if (epd_client_start(model_file.c_str(), epd_param) < 0 || !recorder->start())
+                throw "epd_client_start() failed or recorder->start() failed";
+        } catch (const char* message) {
+            nugu_error(message);
 
             is_running = false;
             recorder->stop();
@@ -156,7 +175,7 @@ void SpeechRecognizer::loop()
             sendListeningEvent(ListeningState::FAILED, id);
             sendListeningEvent(ListeningState::DONE, id);
             continue;
-        };
+        }
 
         sendListeningEvent(ListeningState::LISTENING, id);
 
@@ -199,7 +218,6 @@ void SpeechRecognizer::loop()
 
             length = OUT_DATA_SIZE;
             epd_ret = epd_client_run((char*)epd_buf, &length, (short*)pcm_buf, pcm_size);
-
             if (epd_ret < 0 || epd_ret > EPD_END_CHECK) {
                 nugu_error("epd_client_run() failed: %d", epd_ret);
                 sendListeningEvent(ListeningState::FAILED, id);
@@ -207,9 +225,19 @@ void SpeechRecognizer::loop()
             }
 
             if (length > 0) {
-                /* Invoke the onRecordData callback in thread context */
-                if (listener)
-                    listener->onRecordData((unsigned char*)epd_buf, length);
+                unsigned char* speex_buf;
+                size_t encoded_size = 0;
+
+                speex_buf = (unsigned char*)nugu_encoder_encode(encoder, epd_buf, length, &encoded_size);
+                if (!speex_buf) {
+                    nugu_error("nugu_encoder_encode() failed");
+                } else {
+                    /* Invoke the onRecordData callback in thread context */
+                    if (listener)
+                        listener->onRecordData(speex_buf, encoded_size);
+
+                    free(speex_buf);
+                }
             }
 
             switch (epd_ret) {
@@ -249,6 +277,8 @@ void SpeechRecognizer::loop()
         is_running = false;
         recorder->stop();
         epd_client_release();
+        nugu_encoder_free(encoder);
+        encoder = NULL;
 
         if (!is_started) {
             is_running = false;
