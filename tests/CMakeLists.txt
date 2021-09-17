@@ -38,3 +38,21 @@ ENDFOREACH(test)
 
 ADD_SUBDIRECTORY(core)
 ADD_SUBDIRECTORY(clientkit)
+
+pkg_check_modules(opuschk REQUIRED libopusenc opus ogg)
+ADD_EXECUTABLE(test_opus test_opus.c)
+TARGET_COMPILE_OPTIONS(test_opus PRIVATE ${opuschk_CFLAGS})
+TARGET_LINK_LIBRARIES(test_opus ${opuschk_LDFLAGS} ${pkgs_LDFLAGS}
+	-L${CMAKE_BINARY_DIR}/src -lnugu -lstdc++)
+
+ADD_EXECUTABLE(test_enc_opus test_enc_opus.c)
+TARGET_COMPILE_OPTIONS(test_enc_opus PRIVATE ${opuschk_CFLAGS})
+TARGET_LINK_LIBRARIES(test_enc_opus ${opuschk_LDFLAGS} ${pkgs_LDFLAGS}
+	-L${CMAKE_BINARY_DIR}/src -lnugu -lstdc++)
+
+
+ADD_EXECUTABLE(test_ogg_file test_ogg_file.c)
+TARGET_COMPILE_OPTIONS(test_ogg_file PRIVATE ${opuschk_CFLAGS})
+TARGET_LINK_LIBRARIES(test_ogg_file ${opuschk_LDFLAGS} ${pkgs_LDFLAGS}
+	-L${CMAKE_BINARY_DIR}/src -lnugu -lstdc++)
+

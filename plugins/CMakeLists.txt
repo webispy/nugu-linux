@@ -34,6 +34,46 @@ IF(ENABLE_OPUS_PLUGIN)
 	ADD_DEPENDENCIES(opus libnugu)
 ENDIF(ENABLE_OPUS_PLUGIN)
 
+# OPUS encoder plugin
+IF(ENABLE_OPUSENC_PLUGIN)
+	ADD_LIBRARY(opusenc SHARED opus_enc.c)
+
+	pkg_check_modules(opus REQUIRED libopusenc)
+	TARGET_COMPILE_OPTIONS(opusenc PRIVATE ${opus_CFLAGS})
+	TARGET_LINK_LIBRARIES(opusenc ${pkgs_LDFLAGS} ${opus_LDFLAGS}
+		-L${CMAKE_BINARY_DIR}/src -lnugu)
+
+	SET_TARGET_PROPERTIES(opusenc PROPERTIES PREFIX "" OUTPUT_NAME opusenc)
+	INSTALL(TARGETS opusenc LIBRARY DESTINATION ${plugindir})
+	ADD_DEPENDENCIES(opusenc libnugu)
+
+	#
+	ADD_LIBRARY(opusenc2 SHARED opus_enc_new.c)
+
+	pkg_check_modules(opus REQUIRED opus ogg)
+	TARGET_COMPILE_OPTIONS(opusenc2 PRIVATE ${opus_CFLAGS})
+	TARGET_LINK_LIBRARIES(opusenc2 ${pkgs_LDFLAGS} ${opus_LDFLAGS}
+		-L${CMAKE_BINARY_DIR}/src -lnugu)
+
+	SET_TARGET_PROPERTIES(opusenc2 PROPERTIES PREFIX "" OUTPUT_NAME opusenc2)
+	INSTALL(TARGETS opusenc2 LIBRARY DESTINATION ${plugindir})
+	ADD_DEPENDENCIES(opusenc2 libnugu)
+
+	#
+	ADD_LIBRARY(opusenc3 SHARED opus_enc_from_file.c)
+
+	pkg_check_modules(opus REQUIRED opus)
+	TARGET_COMPILE_OPTIONS(opusenc3 PRIVATE ${opus_CFLAGS})
+	TARGET_LINK_LIBRARIES(opusenc3 ${pkgs_LDFLAGS} ${opus_LDFLAGS}
+		-L${CMAKE_BINARY_DIR}/src -lnugu)
+
+	SET_TARGET_PROPERTIES(opusenc3 PROPERTIES PREFIX "" OUTPUT_NAME opusenc3)
+	INSTALL(TARGETS opusenc3 LIBRARY DESTINATION ${plugindir})
+	ADD_DEPENDENCIES(opusenc3 libnugu)
+
+ENDIF(ENABLE_OPUSENC_PLUGIN)
+
+
 # PortAudio plugin
 IF(ENABLE_PORTAUDIO_PLUGIN)
 	pkg_check_modules(portaudio REQUIRED portaudio-2.0 alsa)

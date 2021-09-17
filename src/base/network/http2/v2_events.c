@@ -19,6 +19,8 @@
 
 #include <glib.h>
 
+#include "opus_feature.h"
+
 #include "base/nugu_log.h"
 #include "base/nugu_equeue.h"
 #include "base/nugu_uuid.h"
@@ -37,6 +39,12 @@
 #define U_CRLF ((unsigned char *)CRLF)
 #define U_HYPHEN ((unsigned char *)HYPHEN)
 
+#ifdef FEATURE_OPUS
+#define CONTENT_TYPE "audio/ogg; codecs=opus"
+#else
+#define CONTENT_TYPE "application/octet-stream"
+#endif
+
 #define PART_HEADER_JSON                                                       \
 	"Content-Disposition: form-data; name=\"event\"" CRLF                  \
 	"Content-Type: application/json" CRLF CRLF
@@ -44,7 +52,7 @@
 #define PART_HEADER_BINARY_FMT                                                 \
 	"Content-Disposition: form-data; name=\"attachment\";"                 \
 	" filename=\"%d;%s\"" CRLF                                             \
-	"Content-Type: application/octet-stream" CRLF                          \
+	"Content-Type: " CONTENT_TYPE CRLF                        \
 	"Content-Length: %zd" CRLF "Message-Id: %s" CRLF CRLF
 
 struct _v2_events {

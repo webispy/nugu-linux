@@ -16,6 +16,8 @@
 
 #include <string.h>
 
+#include "opus_feature.h"
+
 #include "base/nugu_log.h"
 #include "base/nugu_prof.h"
 
@@ -386,7 +388,11 @@ void ASRAgent::sendEventRecognize(unsigned char* data, size_t length, bool is_en
         return;
     }
 
+#ifdef FEATURE_OPUS
+    root["codec"] = "OGG_OPUS";
+#else
     root["codec"] = "SPEEX";
+#endif
     root["language"] = "KOR";
     root["endpointing"] = epd_type;
     root["encoding"] = asr_encoding;

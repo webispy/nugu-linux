@@ -18,6 +18,8 @@
 #include <endpoint_detector.h>
 #endif
 
+#include "opus_feature.h"
+
 #include "base/nugu_log.h"
 #include "base/nugu_prof.h"
 #include "base/nugu_encoder.h"
@@ -159,7 +161,11 @@ void SpeechRecognizer::loop()
         sendListeningEvent(ListeningState::READY, id);
 
         try {
+#ifdef FEATURE_OPUS
+            encoder = nugu_encoder_new(nugu_encoder_driver_find_bytype(NUGU_ENCODER_TYPE_OPUS), prop);
+#else
             encoder = nugu_encoder_new(nugu_encoder_driver_find_bytype(NUGU_ENCODER_TYPE_SPEEX), prop);
+#endif
             if (!encoder)
                 throw "can't find encoder driver";
 
@@ -228,8 +234,12 @@ void SpeechRecognizer::loop()
                 unsigned char* speex_buf;
                 size_t encoded_size = 0;
 
+nugu_error("recv epd pcm data %d bytes", length);
+
                 speex_buf = (unsigned char*)nugu_encoder_encode(encoder, epd_buf, length, &encoded_size);
-                if (!speex_buf) {
+nugu_error("encoded_size: %d", encoded_size);
+
+                if (!speex_buf || encoded_size <= 0) {
                     nugu_error("nugu_encoder_encode() failed");
                 } else {
                     /* Invoke the onRecordData callback in thread context */
