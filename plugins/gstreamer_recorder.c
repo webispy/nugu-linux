@@ -37,6 +37,13 @@
 #define PLUGIN_DRIVER_NAME "gstreamer_recorder"
 #define SAMPLE_SILENCE (0.0f)
 
+#ifdef __APPLE__
+#define AUDIO_RESAMPLE
+#endif
+
+#define AUDIO_RESAMPLE
+#define ALSA_SOURCE
+
 typedef struct gst_handle GstreamerHandle;
 
 struct gst_handle {
@@ -44,7 +51,11 @@ struct gst_handle {
 	GstElement *audio_source;
 	GstElement *caps_filter;
 	GstElement *audio_sink;
-#ifdef __APPLE__
+#ifdef ALSA_SOURCE
+	GstElement *alsa_caps;
+#endif
+#ifdef AUDIO_RESAMPLE
+	GstElement *queue;
 	GstElement *audioconvert;
 	GstElement *resample;
 #endif
@@ -347,9 +358,14 @@ static GstreamerHandle *_create(NuguRecorder *rec)
 	char audio_source[128];
 	char caps_filter[128];
 	char audio_sink[128];
-#ifdef __APPLE__
+#ifdef AUDIO_RESAMPLE
 	char audio_convert[128];
 	char audio_resample[128];
+	char queue[128];
+#endif
+#ifdef ALSA_SOURCE
+	char alsa_caps[128];
+	GstCaps *caps;
 #endif
 
 	gh = nugu_recorder_get_driver_data(rec);
@@ -361,11 +377,15 @@ static GstreamerHandle *_create(NuguRecorder *rec)
 	g_snprintf(pipeline, 128, "rec_pipeline#%d", _uniq_id);
 	g_snprintf(audio_source, 128, "rec_audio_source#%d", _uniq_id);
 	g_snprintf(caps_filter, 128, "rec_caps_filter#%d", _uniq_id);
-	g_snprintf(audio_sink, 128, "rec_audio_sink#%d", _uniq_id);
-#ifdef __APPLE__
+#ifdef AUDIO_RESAMPLE
 	g_snprintf(audio_convert, 128, "rec_audio_convert#%d", _uniq_id);
 	g_snprintf(audio_resample, 128, "rec_audio_resample#%d", _uniq_id);
+	g_snprintf(queue, 128, "rec_queue#%d", _uniq_id);
 #endif
+#ifdef ALSA_SOURCE
+	g_snprintf(alsa_caps, 128, "rec_alsa_caps_filter#%d", _uniq_id);
+#endif
+	g_snprintf(audio_sink, 128, "rec_audio_sink#%d", _uniq_id);
 
 	gh = (GstreamerHandle *)g_malloc0(sizeof(GstreamerHandle));
 	if (!gh) {
@@ -374,27 +394,56 @@ static GstreamerHandle *_create(NuguRecorder *rec)
 	}
 
 	gh->pipeline = gst_pipeline_new(pipeline);
+#ifdef ALSA_SOURCE
+	gh->audio_source =
+		gst_element_factory_make("alsasrc", audio_source);
+	gh->alsa_caps = gst_element_factory_make("capsfilter", alsa_caps);
+#else
 	gh->audio_source =
 		gst_element_factory_make("autoaudiosrc", audio_source);
-	gh->caps_filter = gst_element_factory_make("capsfilter", caps_filter);
-#ifdef __APPLE__
+#endif
+
+#ifdef AUDIO_RESAMPLE
+	gh->queue =
+		gst_element_factory_make("queue", queue);
 	gh->audioconvert =
 		gst_element_factory_make("audioconvert", audio_convert);
 	gh->resample =
 		gst_element_factory_make("audioresample", audio_resample);
 #endif
+
+	gh->caps_filter = gst_element_factory_make("capsfilter", caps_filter);
+
 	gh->audio_sink = gst_element_factory_make("appsink", audio_sink);
 
 	g_object_set(gh->audio_sink, "emit-signals", TRUE, "sync", FALSE, NULL);
 	g_signal_connect(gh->audio_sink, "new-sample",
 			 G_CALLBACK(_new_sample_from_sink), gh);
 
-#ifdef __APPLE__
-	gst_bin_add_many(GST_BIN(gh->pipeline), gh->audio_source,
+#ifdef AUDIO_RESAMPLE
+#ifdef ALSA_SOURCE
+	gst_bin_add_many(GST_BIN(gh->pipeline), gh->audio_source, gh->alsa_caps,
+			 gh->queue, gh->audioconvert, gh->resample,
+			 gh->caps_filter, gh->audio_sink, NULL);
+
+	gst_element_link_many(gh->audio_source, gh->alsa_caps, gh->queue,
+			      gh->audioconvert, gh->resample, gh->caps_filter,
+			      gh->audio_sink, NULL);
+
+	g_object_set(gh->audio_source, "device", "dmicarray", NULL);
+	caps = gst_caps_new_simple("audio/x-raw", "format", G_TYPE_STRING,
+				   "S16LE", "rate", G_TYPE_INT, 48000,
+				   "channels", G_TYPE_INT, 8, NULL);
+	g_object_set(G_OBJECT(gh->alsa_caps), "caps", caps, NULL);
+	gst_caps_unref(caps);
+#else
+	gst_bin_add_many(GST_BIN(gh->pipeline), gh->audio_source, gh->queue,
 			 gh->audioconvert, gh->resample, gh->caps_filter,
 			 gh->audio_sink, NULL);
-	gst_element_link_many(gh->audio_source, gh->audioconvert, gh->resample,
-			      gh->caps_filter, gh->audio_sink, NULL);
+	gst_element_link_many(gh->audio_source, gh->queue, gh->audioconvert,
+			      gh->resample, gh->caps_filter, gh->audio_sink,
+			      NULL);
+#endif
 #else
 	gst_bin_add_many(GST_BIN(gh->pipeline), gh->audio_source,
 			 gh->caps_filter, gh->audio_sink, NULL);
