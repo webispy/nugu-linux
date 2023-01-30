@@ -94,12 +94,6 @@ jobs:
           mkdir /tmp/result
           cp *.deb /tmp/result/
 
-      - name: Build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: DEB packages
-          path: /tmp/result/
-
   build_mac:
     runs-on: macos-latest
     needs: [checkpatch_review, clang_tidy_review]
