@@ -676,6 +676,10 @@ int main(int argc, char *argv[])
 	g_test_init(&argc, &argv, NULL);
 	g_log_set_always_fatal((GLogLevelFlags)G_LOG_FATAL_MASK);
 
+	nugu_http_init();
+
+	g_test_add_func("/http/default", test_nugu_http_default);
+
 	/*
 	 * If the "HTTP_TEST_SERVER" environment value is not set,
 	 * the HTTP test is skipped.
@@ -689,9 +693,6 @@ int main(int argc, char *argv[])
 
 	SERVER = getenv("HTTP_TEST_SERVER");
 
-	nugu_http_init();
-
-	g_test_add_func("/http/default", test_nugu_http_default);
 	g_test_add_func("/http/timeout", test_nugu_http_timeout);
 	g_test_add_func("/http/invalid_async", test_nugu_http_invalid_async);
 	g_test_add_func("/http/get_sync", test_nugu_http_get_sync);
