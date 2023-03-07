@@ -34,6 +34,8 @@
 
 #include "base/nugu_log.h"
 
+#define JUST_TEST 1
+
 #define MAX_FIELDSIZE_FILENAME 30
 #define MAX_FIELDSIZE_FUNCNAME 30
 
