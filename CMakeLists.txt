@@ -141,6 +141,7 @@ DEFINE_FEATURE(EXAMPLES_SIMPLE_TTS ON "Examples - simple-tts")
 DEFINE_FEATURE(EXAMPLES_PROFILING ON "Examples - profiling")
 DEFINE_FEATURE(EXAMPLES_CAP_INJECTION ON "Examples - capability-injection")
 DEFINE_FEATURE(EXAMPLES_RESP_FILTER ON "Examples - response-filter")
+DEFINE_FEATURE(EXAMPLES_CBINDINGS ON "Examples - c-bindings")
 
 # API check
 CMAKE_PUSH_CHECK_STATE(RESET)
@@ -413,6 +414,9 @@ ADD_DEFINITIONS(
 	-DNUGU_ENV_DUMP_LINK_FILE_RECORDER="NUGU_DUMP_LINK_FILE_RECORDER"
 	-DNUGU_ENV_DEFAULT_PCM_DRIVER="NUGU_DEFAULT_PCM_DRIVER"
 	-DNUGU_ENV_PLUGIN_PATH="NUGU_PLUGIN_PATH"
+
+	# Only symbols that use EXPORT_API are visible, and all other symbols are hidden.
+	-DEXPORT_API=__attribute__\(\(visibility\(\"default\"\)\)\)
 )
 
 MESSAGE("")

@@ -36,6 +36,10 @@ IF(ENABLE_EXAMPLES_RESP_FILTER)
     ADD_SUBDIRECTORY(response_filter)
 ENDIF()
 
+IF(ENABLE_EXAMPLES_CBINDINGS)
+    ADD_SUBDIRECTORY(simple_ncb)
+ENDIF()
+
 # A shell script that executes a program using the token information
 # generated in the OAuth2 example.
 INSTALL(PROGRAMS nugusdk_start_sample.sh
